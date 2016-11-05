@@ -11,10 +11,10 @@ def test_all_features_sandwich():
     case.create_bottom_layer('bottom')
     case.export('bottom', 'test_exports')
 
-    case.create_closed_layer('closed')
+    case.create_middle_layer('closed')
     case.export('closed', 'test_exports')
 
-    case.create_open_layer('open')
+    case.create_middle_layer('open')
     case.export('open', 'test_exports')
 
     case.create_switch_layer('reinforcing')

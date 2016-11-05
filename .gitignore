@@ -9,6 +9,7 @@ Makefile
 make_order
 make_*.sh
 test_exports/*.dxf
+test_exports/*/
 .coverage
 htmlcov
 xmlcov

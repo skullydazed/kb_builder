@@ -161,7 +161,7 @@ class KeyboardCase(object):
 
         We stash nifty things like the feet in this layer.
         """
-        log.debug("create_closed_layer(layer='%s')" % layer)
+        log.debug("create_middle_layer(layer='%s')" % layer)
         inside_width = self.inside_width-self.kerf*2
         inside_height = self.inside_height-self.kerf*2
         self.init_plate(layer)
