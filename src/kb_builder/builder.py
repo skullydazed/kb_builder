@@ -51,6 +51,9 @@ log = logging.getLogger()
 CUT_SWITCH = 9
 CENTER_MOVE = 8
 
+logging.addLevelName(CUT_SWITCH, 'cut_switch')
+logging.addLevelName(CENTER_MOVE, 'center_move')
+
 # Constants
 STABILIZERS = {
     # size: (width_between_center, switch_offset)
@@ -67,33 +70,6 @@ STABILIZERS = {
     9: (66.675, 0),
     10: (66.675, 0)
 }
-
-logging.addLevelName(CUT_SWITCH, 'cut_switch')
-logging.addLevelName(CENTER_MOVE, 'center_move')
-
-
-def load_layout(layout_text):
-    """Loads a KLE layout file and returns a list of rows.
-    """
-    layout = []
-    keyboard_properties = {}
-
-    # Wrap in a dictionary so HJSON will accept keyboard-layout-editor raw data
-    for row in hjson.loads('{"layout": [' + layout_text + ']}')['layout']:
-        if isinstance(row, dict):
-            keyboard_properties.update(row)
-        else:
-            layout.append(row)
-
-    layout.insert(0, keyboard_properties)
-
-    return layout
-
-
-def load_layout_file(file):
-    """Loads a KLE layout file and returns a list of rows.
-    """
-    return load_layout(open(file).read())
 
 
 class KeyboardCase(object):
@@ -1208,20 +1184,18 @@ class KeyboardCase(object):
         """Print out all KeyboardCase object configuration settings.
         """
         log.debug('__repr__()')
-        settings = {}
-
-        settings['plate_layout'] = self.layout
-        settings['switch_type'] = self.switch_type
-        settings['stabilizer_type'] = self.stab_type
-        settings['case_type_and_holes'] = self.case
-        settings['width_padding'] = self.x_pad
-        settings['height_padding'] = self.y_pad
-        settings['pcb_width_padding'] = self.x_pcb_pad
-        settings['pcb_height_padding'] = self.y_pcb_pad
-        settings['plate_corners'] = self.corners
-        settings['kerf'] = self.kerf
-
-        return hjson.dumps(settings, sort_keys=True, indent=4, separators=(',', ': '))
+        return {
+            'plate_layout': self.layout,
+            'switch_type': self.switch_type,
+            'stabilizer_type': self.stab_type,
+            'case_type_and_holes': self.case,
+            'width_padding': self.x_pad,
+            'height_padding': self.y_pad,
+            'pcb_width_padding': self.x_pcb_pad,
+            'pcb_height_padding': self.y_pcb_pad,
+            'plate_corners': self.corners,
+            'kerf': self.kerf
+        }
 
     def export(self, layer, directory='static/exports'):
         """Export the specified layer to the formats specified in self.formats.
@@ -1248,26 +1222,32 @@ class KeyboardCase(object):
                 cadquery.exporters.exportShape(self.plate, 'TJS', f)
                 self.exports[layer].append({'name': 'js', 'url': '/'+basename+'.js'})
                 log.info("Exported 'JS' to %s.js", basename)
+
         if 'brp' in self.formats:
             Part.export(doc.Objects, basename+".brp")
             self.exports[layer].append({'name': 'brp', 'url': '/'+basename+'.brp'})
             log.info("Exported 'BRP' to %s.brp", basename)
+
         if 'stp' in self.formats:
             Part.export(doc.Objects, basename+".stp")
             self.exports[layer].append({'name': 'stp', 'url': '/'+basename+'.stp'})
             log.info("Exported 'STP' to %s.stp", basename)
+
         if 'stl' in self.formats:
             Mesh.export(doc.Objects, basename+".stl")
             self.exports[layer].append({'name': 'stl', 'url': '/'+basename+'.stl'})
             log.info("Exported 'STL' to %s.stl", basename)
+
         if 'dxf' in self.formats:
             importDXF.export(doc.Objects, basename+".dxf")
             self.exports[layer].append({'name': 'dxf', 'url': '/'+basename+'.dxf'})
             log.info("Exported 'DXF' to %s.dxf", basename)
+
         if 'svg' in self.formats:
             importSVG.export(doc.Objects, basename+".svg")
             self.exports[layer].append({'name': 'svg', 'url': '/'+basename+'.svg'})
             log.info("Exported 'SVG' to %s.svg", basename)
+
         if 'json' in self.formats and layer == 'switch':
             with open(basename+".json", 'w') as json_file:
                 json_file.write(repr(self))
@@ -1277,4 +1257,3 @@ class KeyboardCase(object):
         # remove all the documents from the view before we move on
         for o in doc.Objects:
             doc.removeObject(o.Label)
-

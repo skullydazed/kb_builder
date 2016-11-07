@@ -10,7 +10,8 @@ import sys
 
 sys.path.append('src')
 from time import time
-from kb_builder.builder import KeyboardCase, load_layout
+from kb_builder.builder import KeyboardCase
+from kb_builder.functions import load_layout
 
 
 # Parse our command line args

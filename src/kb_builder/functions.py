@@ -1,9 +1,38 @@
 """Helpful functions.
 """
+import hjson
 import logging
 import math
 
+
 log = logging.getLogger()
+
+
+def load_layout(layout_text):
+    """Loads a KLE layout file and returns a list of rows.
+    """
+    log.debug('load_layout(%s)', layout_text)
+    layout = []
+    keyboard_properties = {}
+
+    # Wrap in a dictionary so HJSON will accept keyboard-layout-editor raw data
+    for row in hjson.loads('{"layout": [' + layout_text + ']}')['layout']:
+        if isinstance(row, dict):
+            keyboard_properties.update(row)
+        else:
+            layout.append(row)
+
+    layout.insert(0, keyboard_properties)
+
+    return layout
+
+
+def load_layout_file(file):
+    """Loads a KLE layout file and returns a list of rows.
+    """
+    log.debug('load_layout_file(%s)', file)
+    return load_layout(open(file).read())
+
 
 def rotate_points(points, radians, rotate_point):
     """Rotate a sequence of points.
