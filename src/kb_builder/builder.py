@@ -32,10 +32,9 @@ import logging
 import math
 import sys
 
+from functions import rotate_points
 from os import makedirs
 from os.path import exists
-
-log = logging.getLogger()
 
 sys.path.append('/usr/lib/freecad/lib')  # Setup the import environment for FreeCAD
 import FreeCAD
@@ -44,6 +43,9 @@ import importDXF
 import importSVG
 import Mesh
 import Part
+
+
+log = logging.getLogger()
 
 # Custom log levels
 CUT_SWITCH = 9
@@ -661,26 +663,6 @@ class KeyboardCase(object):
             else:
                 log.error('Invalid hole configuration! Need at least 4 holes and must be divisible by 2!')
 
-    def rotate_points(self, points, radians, rotate_point):
-        """Rotate a sequence of points.
-
-        points: the points to rotate
-
-        radians: the number of degrees to rotate
-
-        rotate_point: the coordinate to rotate around
-        """
-        log.debug("rotate_points(points='%s', radians='%s', rotate_point='%s')", points, radians, rotate_point)
-
-        def calculate_point(point):
-            log.debug("calculate_point(point='%s')", point)
-            return (
-                math.cos(math.radians(radians)) * (point[0]-rotate_point[0]) - math.sin(math.radians(radians)) * (point[1]-rotate_point[1]) + rotate_point[0],
-                math.sin(math.radians(radians)) * (point[0]-rotate_point[0]) + math.cos(math.radians(radians)) * (point[1]-rotate_point[1]) + rotate_point[1]
-            )
-
-        return map(calculate_point, points)
-
     def cut_switch(self, switch_coord, key=None, layer='switch'):
         """Cut a switch opening
 
@@ -900,9 +882,9 @@ class KeyboardCase(object):
             ]
 
         if rotate:
-            points = self.rotate_points(points, 90, (0,0))
+            points = rotate_points(points, 90, (0,0))
         if rotate_key:
-            points = self.rotate_points(points, rotate_key, (0,0))
+            points = rotate_points(points, rotate_key, (0,0))
 
         self.plate = self.center(switch_coord[0], switch_coord[1]).polyline(points).cutThruAll()
 
@@ -969,9 +951,9 @@ class KeyboardCase(object):
                     (mx_width,-mx_height)
                 ]
                 if rotate:
-                    points = self.rotate_points(points, 90, (0,0))
+                    points = rotate_points(points, 90, (0,0))
                 if rotate_stab:
-                    points = self.rotate_points(points, rotate_stab, (0,0))
+                    points = rotate_points(points, rotate_stab, (0,0))
                 self.plate = self.plate.polyline(points).cutThruAll()
             elif stab_type == 'cherry':
                 points = [
@@ -1006,9 +988,9 @@ class KeyboardCase(object):
                     (mx_stab_inside_x,-mx_stab_inside_y),
                 ]
                 if rotate:
-                    points = self.rotate_points(points, 90, (0,0))
+                    points = rotate_points(points, 90, (0,0))
                 if rotate_stab:
-                    points = self.rotate_points(points, rotate_stab, (0,0))
+                    points = rotate_points(points, rotate_stab, (0,0))
                 self.plate = self.plate.polyline(points).cutThruAll()
             elif stab_type == 'costar':
                 points_l = [
@@ -1026,11 +1008,11 @@ class KeyboardCase(object):
                     (stab_4,-stab_5)
                 ]
                 if rotate:
-                    points_l = self.rotate_points(points_l, 90, (0,0))
-                    points_r = self.rotate_points(points_r, 90, (0,0))
+                    points_l = rotate_points(points_l, 90, (0,0))
+                    points_r = rotate_points(points_r, 90, (0,0))
                 if rotate_stab:
-                    points_l = self.rotate_points(points_l, rotate_stab, (0,0))
-                    points_r = self.rotate_points(points_r, rotate_stab, (0,0))
+                    points_l = rotate_points(points_l, rotate_stab, (0,0))
+                    points_r = rotate_points(points_r, rotate_stab, (0,0))
                 self.plate = self.plate.polyline(points_l)
                 self.plate = self.plate.polyline(points_r).cutThruAll()
             elif stab_type in ('alps', 'matias'):
@@ -1050,11 +1032,11 @@ class KeyboardCase(object):
                 ]
 
                 if rotate:
-                    points_l = self.rotate_points(points_l, 90, (0,0))
-                    points_r = self.rotate_points(points_r, 90, (0,0))
+                    points_l = rotate_points(points_l, 90, (0,0))
+                    points_r = rotate_points(points_r, 90, (0,0))
                 if rotate_stab:
-                    points_l = self.rotate_points(points_l, rotate_stab, (0,0))
-                    points_r = self.rotate_points(points_r, rotate_stab, (0,0))
+                    points_l = rotate_points(points_l, rotate_stab, (0,0))
+                    points_r = rotate_points(points_r, rotate_stab, (0,0))
                 self.plate = self.plate.polyline(points_l)
                 self.plate = self.plate.polyline(points_r).cutThruAll()
             else:
@@ -1103,9 +1085,9 @@ class KeyboardCase(object):
                     (x-stab_cherry_half_width,-stab_y_wire)
                 ]
                 if rotate:
-                    points = self.rotate_points(points, 90, (0,0))
+                    points = rotate_points(points, 90, (0,0))
                 if rotate_stab:
-                    points = self.rotate_points(points, rotate_stab, (0,0))
+                    points = rotate_points(points, rotate_stab, (0,0))
                 self.plate = self.plate.polyline(points).cutThruAll()
             elif stab_type == 'cherry':
                 points = [
@@ -1140,9 +1122,9 @@ class KeyboardCase(object):
                     (x - stab_cherry_half_width, -stab_y_wire),#1
                 ]
                 if rotate:
-                    points = self.rotate_points(points, 90, (0,0))
+                    points = rotate_points(points, 90, (0,0))
                 if rotate_stab:
-                    points = self.rotate_points(points, rotate_stab, (0,0))
+                    points = rotate_points(points, rotate_stab, (0,0))
                 self.plate = self.plate.polyline(points).cutThruAll()
             elif stab_type in ('costar', 'matias'):
                 points_l = [
@@ -1160,11 +1142,11 @@ class KeyboardCase(object):
                     (x-stab_cherry_bottom_wing_half_width,-stab_5)
                 ]
                 if rotate:
-                    points_l = self.rotate_points(points_l, 90, (0,0))
-                    points_r = self.rotate_points(points_r, 90, (0,0))
+                    points_l = rotate_points(points_l, 90, (0,0))
+                    points_r = rotate_points(points_r, 90, (0,0))
                 if rotate_stab:
-                    points_l = self.rotate_points(points_l, rotate_stab, (0,0))
-                    points_r = self.rotate_points(points_r, rotate_stab, (0,0))
+                    points_l = rotate_points(points_l, rotate_stab, (0,0))
+                    points_r = rotate_points(points_r, rotate_stab, (0,0))
                 self.plate = self.plate.polyline(points_l)
                 self.plate = self.plate.polyline(points_r).cutThruAll()
             elif stab_type == 'alps':
@@ -1192,11 +1174,11 @@ class KeyboardCase(object):
                 ]
 
                 if rotate:
-                    points_l = self.rotate_points(points_l, 90, (0, 0))
-                    points_r = self.rotate_points(points_r, 90, (0, 0))
+                    points_l = rotate_points(points_l, 90, (0, 0))
+                    points_r = rotate_points(points_r, 90, (0, 0))
                 if rotate_stab:
-                    points_l = self.rotate_points(points_l, rotate_stab, (0, 0))
-                    points_r = self.rotate_points(points_r, rotate_stab, (0, 0))
+                    points_l = rotate_points(points_l, rotate_stab, (0, 0))
+                    points_r = rotate_points(points_r, rotate_stab, (0, 0))
                 self.plate = self.plate.polyline(points_l)
                 self.plate = self.plate.polyline(points_r).cutThruAll()
             else:
