@@ -1,7 +1,8 @@
 """Test the basic functionality with a simple plate including every switch type.
 """
 import filecmp
-from builder import KeyboardCase, load_layout_file
+from builder import KeyboardCase
+from functions import load_layout_file
 
 
 def test_all_features_sandwich():
