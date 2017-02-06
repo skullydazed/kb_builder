@@ -25,6 +25,6 @@ def test_all_features_poker():
 
     for layer in ('reinforcing', 'switch'):
         assert layer in case.layers
-        assert filecmp.cmp('test_exports/switch_%s.dxf' % case.name, 'test_exports/switch_%s.dxf.knowngood' % case.name) == True
+        assert filecmp.cmp('test_exports/%s/switch_layer.dxf' % case.name, 'test_exports/%s.knowngood/switch_layer.dxf' % case.name) == True
 
     return True

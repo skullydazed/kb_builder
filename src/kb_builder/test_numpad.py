@@ -23,6 +23,6 @@ def test_numpad():
     assert case.inside_height == 95.25
 
     # Make sure the DXF matches the reference DXF
-    assert filecmp.cmp('test_exports/switch_%s.dxf' % case.name, 'test_exports/switch_%s.dxf.knowngood' % case.name) == True
+    assert filecmp.cmp('test_exports/%s/switch_layer.dxf' % case.name, 'test_exports/%s.knowngood/switch_layer.dxf' % case.name) == True
 
     return True
