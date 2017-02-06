@@ -701,13 +701,14 @@ class KeyboardCase(object):
 
         if layer == 'top':
             # Cut out openings the size of keycaps
+            center_offset = False
             key_spacing = self.layers[layer].get('key_spacing', self.key_spacing)
             switch_type = 'mx'
             stab_type = 'cherry'
             if height > 1:
-                mx_width = (((key_spacing/2) * height) + 0.5) - kerf
+                mx_width = (((key_spacing/2) * height) + (height-0.5)) - kerf
             else:
-                mx_width = (((key_spacing/2) * width) + 0.5) - kerf
+                mx_width = (((key_spacing/2) * width) + (width-0.5)) - kerf
             mx_height = ((key_spacing/2) + 0.5) - kerf
         elif layer == 'reinforcing':
             offset = 1
@@ -743,7 +744,7 @@ class KeyboardCase(object):
 
         if length >= 2:
             x = STABILIZERS[length][0] if length in STABILIZERS else STABILIZERS[2][0]
-            if not center_offset:
+            if not center_offset and layer != 'top':
                 center_offset = STABILIZERS[length][1] if length in STABILIZERS else 0
 
         if center_offset > 0:
@@ -871,67 +872,16 @@ class KeyboardCase(object):
         # Cut stabilizers. We have different sections for 2U vs other sizes
         # because cherry 2U stabs are shaped differently from larger stabs.
         # This should be refactored for better readability.
-        if layer == 'top':
+        if stab_type not in ('cherry', 'cherry-costar', 'costar', 'matias', 'alps'):
+            log.error('Unknown stab type %s! No stabilizer cut', stab_type)
+
+        elif layer == 'top':
             # Don't cut stabs on top
-            self.x_off += switch_coord[0]
-            return self.plate
+            pass
 
         elif (width >= 2 and width < 3) or (rotate and height >= 2 and height < 3):
             # Cut 2 unit stabilizer cutout
-            if stab_type == 'cherry-costar':
-                points = [
-                    (mx_width,-mx_height),
-                    (mx_width,-mx_stab_inside_y),
-                    (mx_stab_inside_x,-mx_stab_inside_y),
-                    (mx_stab_inside_x,-stab_cherry_top_x),
-                    (stab_4,-stab_cherry_top_x),
-                    (stab_4,-stab_5),
-                    (stab_6,-stab_5),
-                    (stab_6,-stab_cherry_top_x),
-                    (mx_stab_outside_x,-stab_cherry_top_x),
-                    (mx_stab_outside_x,-stab_y_wire),
-                    (stab_9,-stab_y_wire),
-                    (stab_9,stab_cherry_wing_bottom_x),
-                    (mx_stab_outside_x,stab_cherry_wing_bottom_x),
-                    (mx_stab_outside_x,stab_cherry_bottom_x),
-                    (stab_6,stab_cherry_bottom_x),
-                    (stab_6,stab_12),
-                    (stab_4,stab_12),
-                    (stab_4,stab_cherry_bottom_x),
-                    (mx_stab_inside_x,stab_cherry_bottom_x),
-                    (mx_stab_inside_x,stab_13),
-                    (mx_width,stab_13),
-                    (mx_width,mx_height),
-                    (-mx_width,mx_height),
-                    (-mx_width,stab_13),
-                    (-mx_stab_inside_x,stab_13),
-                    (-mx_stab_inside_x,stab_cherry_bottom_x),
-                    (-stab_4,stab_cherry_bottom_x),
-                    (-stab_4,stab_12),
-                    (-stab_6,stab_12),
-                    (-stab_6,stab_cherry_bottom_x),
-                    (-mx_stab_outside_x,stab_cherry_bottom_x),
-                    (-mx_stab_outside_x,stab_cherry_wing_bottom_x),
-                    (-stab_9,stab_cherry_wing_bottom_x),
-                    (-stab_9,-stab_y_wire),
-                    (-mx_stab_outside_x,-stab_y_wire),
-                    (-mx_stab_outside_x,-stab_cherry_top_x),
-                    (-stab_6,-stab_cherry_top_x),
-                    (-stab_6,-stab_5),
-                    (-stab_4,-stab_5),
-                    (-stab_4,-stab_cherry_top_x),
-                    (-mx_stab_inside_x,-stab_cherry_top_x),
-                    (-mx_stab_inside_x,-mx_stab_inside_y),
-                    (-mx_width,-mx_stab_inside_y),
-                    (-mx_width,-mx_height),
-                    (mx_width,-mx_height)
-                ]
-                if rotate:
-                    points = rotate_points(points, 90, (0,0))
-                if rotate_stab:
-                    points = rotate_points(points, rotate_stab, (0,0))
-                self.plate = self.plate.polyline(points).cutThruAll()
-            elif stab_type == 'cherry':
+            if stab_type in ('cherry', 'cherry-costar'):
                 points = [
                     (mx_stab_inside_x,-mx_stab_inside_y),
                     (mx_stab_inside_x,-stab_cherry_top_x),
@@ -968,7 +918,8 @@ class KeyboardCase(object):
                 if rotate_stab:
                     points = rotate_points(points, rotate_stab, (0,0))
                 self.plate = self.plate.polyline(points).cutThruAll()
-            elif stab_type == 'costar':
+
+            if stab_type in ('costar', 'cherry-costar'):
                 points_l = [
                     (-stab_4,-stab_5),
                     (-stab_6,-stab_5),
@@ -991,7 +942,8 @@ class KeyboardCase(object):
                     points_r = rotate_points(points_r, rotate_stab, (0,0))
                 self.plate = self.plate.polyline(points_l)
                 self.plate = self.plate.polyline(points_r).cutThruAll()
-            elif stab_type in ('alps', 'matias'):
+
+            if stab_type in ('alps', 'matias'):
                 points_r = [
                     (alps_stab_inside_x, alps_stab_top_y),
                     (alps_stab_ouside_x, alps_stab_top_y),
@@ -1008,15 +960,13 @@ class KeyboardCase(object):
                 ]
 
                 if rotate:
-                    points_l = rotate_points(points_l, 90, (0,0))
-                    points_r = rotate_points(points_r, 90, (0,0))
+                    points_l = rotate_points(points_l, 270, (0,0))
+                    points_r = rotate_points(points_r, 270, (0,0))
                 if rotate_stab:
                     points_l = rotate_points(points_l, rotate_stab, (0,0))
                     points_r = rotate_points(points_r, rotate_stab, (0,0))
                 self.plate = self.plate.polyline(points_l)
                 self.plate = self.plate.polyline(points_r).cutThruAll()
-            else:
-                log.error('Unknown stab type %s! No stabilizer cut', stab_type)
 
         # Cut larger stabilizer cutouts
         elif (width >= 3) or (rotate and height >= 3):

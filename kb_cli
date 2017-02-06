@@ -249,7 +249,7 @@ if __name__ == '__main__':
     for layer in ('top', 'switch', 'reinforcing'):
         if layer in case.layers:
             plate = case.create_switch_layer(layer)
-            case.export(layer)
+            case.export(layer, args.output_dir)
 
     logging.info("Processing took: {0:.2f} seconds".format(time()-build_start))
 
