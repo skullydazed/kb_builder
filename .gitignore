@@ -14,3 +14,4 @@ test_exports/*/
 htmlcov
 xmlcov
 coverage.xml
+dxf*.py

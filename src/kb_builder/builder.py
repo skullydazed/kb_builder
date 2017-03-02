@@ -36,7 +36,12 @@ from functions import rotate_points
 from os import makedirs
 from os.path import exists
 
-sys.path.append('/usr/lib/freecad/lib')  # Setup the import environment for FreeCAD
+# Setup the import environment for FreeCAD
+sys.path.extend([
+    '/usr/lib/freecad/lib',
+    '/usr/lib/freecad-stable/lib',
+    '/usr/lib/freecad-daily/lib'
+])
 import FreeCAD
 import cadquery
 import importDXF
@@ -173,6 +178,7 @@ class KeyboardCase(object):
         self.center(-self.width/2, -self.height/2) # move to top left of the plate
 
         for r, row in enumerate(self.layout):
+            log.debug('Cutting keys in row %s', r)
             for k, key in enumerate(row):
                 x, y, kx = 0, 0, 0
                 if 'x' in key:
@@ -851,7 +857,7 @@ class KeyboardCase(object):
     def cut_switch_mx_open(self, key, rotate_override=0):
         """Draw an MX switch cutout that allows for switch opening.
         """
-        log.log(CUT_SWITCH, "cut_switch_mx_open(key=%s)", key)
+        log.log(CUT_SWITCH, "cut_switch_mx_open(key=%s) position=%s,%s", key, self.origin[0], self.origin[1])
         mx_height = 7 - key['_k'] + key['_oversize']
         mx_width = 7 - key['_k'] + key['_oversize']
         mx_wing_width = mx_width if key['_oversize'] > 0.8 else 7.8 - key['_k'] + key['_oversize']
@@ -893,7 +899,9 @@ class KeyboardCase(object):
         if key['_r'] or rotate_override:
             points = rotate_points(points, rotate_override or key['_r'], (0,0))
 
-        self.plate = self.plate.polyline(points).cutThruAll()
+        log.log(CUT_SWITCH, 'points:%s width:%s height:%s', points, self.width, self.height)
+        self.plate = self.plate.polyline(points)
+        self.plate = self.plate.cutThruAll()
 
     def cut_switch_alps(self, key):
         """Cut an Alps switch opening.
